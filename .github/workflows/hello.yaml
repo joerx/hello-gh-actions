@@ -1,0 +1,32 @@
+name: Say hello
+
+on: [push]
+
+jobs:
+  hello:
+    name: Hello
+    env:
+      GLOBAL_THING: "global job level thing"
+      LOCAL_THING: "local job level thing"
+      MY_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Hello world
+        uses: actions/hello-world-javascript-action@v1
+        with:
+          who-to-greet: 'Waldo the Wiser'
+        id: hello
+      - name: Hello greetings time
+        run: echo 'The time was ${{ steps.hello.outputs.time }}'
+      - name: Hello shell
+        run: cat /etc/os-release
+      - name: env test
+        env:
+          LOCAL_THING: "local step level thing"
+        run: |
+          echo $GLOBAL_THING # global job level thing
+          echo $LOCAL_THING # local step level thing
+      # Fail, GITHUB_TOKEN isn't set automatically, needs to be mapped into env
+      - run: 'curl -v -XGET -H"Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls > /dev/null'
+      # Pass, MY_GITHUB_TOKEN is mapped to secrets.GITHUB_TOKEN
+      - run: 'curl -v -XGET -H"Authorization: token ${MY_GITHUB_TOKEN}" https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls > /dev/null'
